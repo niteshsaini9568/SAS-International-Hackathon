@@ -83,7 +83,7 @@ def preprocess_image(image):
 # Load the model
 @st.cache_resource
 def load_model():
-    MODEL_PATH = r'C:\Users\nites\OneDrive\Desktop\SAAS\SAS-International-Hackathon\plant_disease_model.h5'
+    MODEL_PATH = r'.\plant_disease_model.h5'
     print(f"Checking if file exists: {os.path.exists(MODEL_PATH)}")
     try:
         model = tf.keras.models.load_model(MODEL_PATH)
