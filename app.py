@@ -5,10 +5,8 @@ import os
 import numpy as np
 import google.generativeai as genai
 
-
 st.set_page_config(page_title="Smart Plant Disease Detection", layout="wide", page_icon="🌿")
 
-# Custom CSS to enhance UI with dark theme
 st.markdown("""
 <style>
     .main {
@@ -73,14 +71,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Preprocess image function
 def preprocess_image(image):
-    img = image.resize((224, 224))  # Resize to match model input size
-    img_array = np.array(img) / 255.0  # Normalize
-    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+    img = image.resize((224, 224))
+    img_array = np.array(img) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
     return img_array
 
-# Load the model
 @st.cache_resource
 def load_model():
     MODEL_PATH = r'.\plant_disease_model.h5'
@@ -96,7 +92,6 @@ model = load_model()
 if model is None:
     st.stop()
 
-# Plant disease dictionary
 disease_mapping = {
     0: "Tomato___Septoria_leaf_spot", 1: "Apple___Black_rot", 2: "Apple___Cedar_apple_rust", 
     3: "Apple___healthy", 4: "Blueberry___healthy", 5: "Cherry___Powdery_mildew", 
@@ -114,27 +109,23 @@ disease_mapping = {
     36: "Tomato___Tomato_mosaic_virus", 37: "Tomato___healthy"
 }
 
-# Gemini API initialization for chatbot
-genai.configure(api_key="AIzaSyCTN7ONXDJRINqBZd-Oldp4CR0HFAPwxBs")  # Replace with your actual API key
+genai.configure(api_key="AIzaSyCTN7ONXDJRINqBZd-Oldp4CR0HFAPwxBs")
 chat = genai.GenerativeModel("gemini-1.5-flash").start_chat(history=[])
 
-# Function to get responses from Gemini API
 def get_gemini_response(question, language):
     try:
         prompt = f"Respond in {language}. {question}"
         response = chat.send_message(prompt)
-        response.resolve()  # Ensure the full message is fetched
+        response.resolve()
         return response.text
     except Exception as e:
         st.error(f"Error getting Gemini response: {str(e)}")
         return None
 
-# Main function for the Streamlit app
 def main():
     st.title("🌿 Smart Plant Disease Detection")
     st.subheader("Empowering Farmers with AI-Driven Insights for Healthier Crops")
 
-    # Sidebar for navigation
     page = st.sidebar.selectbox("Navigate", ["Home", "About", "Disease Detection", "Chat with AI"])
 
     if page == "Home":
@@ -146,24 +137,6 @@ def main():
     elif page == "Chat with AI":
         display_chat_page()
 
-def display_home_page():
-    st.write("Welcome to the Smart Plant Disease Detection System!")
-    st.write("This innovative tool combines advanced image recognition with AI to help farmers identify and manage plant diseases effectively.")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("🎯 Key Features")
-        st.write("- Instant disease detection from plant images")
-        st.write("- AI-powered disease information and treatment advice")
-        st.write("- Multi-language support for global accessibility")
-        st.write("- Interactive chatbot for personalized guidance")
-    
-    with col2:
-        st.subheader("🚀 Getting Started")
-        st.write("1. Navigate to the 'Disease Detection' page")
-        st.write("2. Upload or capture an image of your plant")
-        st.write("3. Get instant disease diagnosis and information")
-        st.write("4. Chat with our AI for more detailed advice")
 def display_home_page():
     st.write("Welcome to the Smart Plant Disease Detection System!")
     st.write("This innovative tool combines advanced image recognition with AI to help farmers identify and manage plant diseases effectively.")
@@ -183,7 +156,6 @@ def display_home_page():
         st.write("3. Get instant disease diagnosis and information")
         st.write("4. Chat with our AI for more detailed advice")
 
-    # New Section for Targeting 38 Common Plant Diseases
     st.subheader("🌿 Targeted Diseases")
     st.write("""
     We are currently targeting the following 38 common plant diseases. 
@@ -191,7 +163,6 @@ def display_home_page():
     not on this list will result in a warning message and no accurate diagnosis.
     """)
     
-    # List of 38 most important common plant diseases
     important_diseases = [
         "Tomato___Septoria_leaf_spot", "Apple___Black_rot", 
         "Apple___Cedar_apple_rust", "Apple___healthy", 
@@ -214,11 +185,9 @@ def display_home_page():
         "Tomato___Tomato_mosaic_virus", "Tomato___healthy"
     ]
     
-    # Display the list of diseases
     for disease in important_diseases:
         st.write(f"- {disease}")
 
-    # Warning message for wrong uploads
     st.warning("**Warning:** Uploading images of diseases not in this list will lead to inaccurate results. Please ensure your uploads are from the targeted diseases.")
 
 def display_about_page():
@@ -253,13 +222,11 @@ def display_about_page():
 def display_disease_detection_page():
     st.header("Plant Disease Detection")
 
-    # Initialize session state variables
     if 'predicted_disease' not in st.session_state:
         st.session_state.predicted_disease = None
     if 'disease_info' not in st.session_state:
         st.session_state.disease_info = {}
 
-    # Image input section
     st.subheader("Upload or Capture Image of Your Crop")
     image_source = st.radio("Select image source:", ("Upload Image", "Capture from Camera"))
 
@@ -276,7 +243,6 @@ def display_disease_detection_page():
             st.session_state.image = image
             st.success("Image captured successfully!")
 
-    # Display current image and predictions
     if 'image' in st.session_state and st.session_state.image is not None:
         col1, col2 = st.columns(2)
         with col1:
@@ -284,7 +250,6 @@ def display_disease_detection_page():
             st.image(st.session_state.image, caption="Current Image", width=300)
 
         with col2:
-            # Predict disease
             img_array = preprocess_image(st.session_state.image)
             prediction = model.predict(img_array)[0]
             predicted_class_index = np.argmax(prediction)
@@ -294,10 +259,9 @@ def display_disease_detection_page():
             st.session_state.predicted_disease = predicted_disease
             st.subheader("Prediction Result")
             st.info(f"Predicted Disease: {predicted_disease}")
-            st.progress(float(predicted_probability))  # Convert to float here
+            st.progress(float(predicted_probability))
             st.write(f"Confidence: {predicted_probability:.2f}")
 
-        # Generate description, cures, and medicines using Gemini
         if st.session_state.predicted_disease != "Unknown Disease":
             language = st.selectbox("Select language for responses:", 
                                     ["English", "Spanish", "French", "German", 
@@ -316,7 +280,6 @@ def display_disease_detection_page():
                         "medicines": get_gemini_response(medicines_query, language),
                     }
 
-            # Display stored responses
             if st.session_state.disease_info:
                 st.subheader(f"Disease Information ({language})")
                 with st.expander("Description", expanded=True):
@@ -329,25 +292,20 @@ def display_disease_detection_page():
 def display_chat_page():
     st.header("Chat with AI Assistant")
 
-    # Initialize chat history in session state if not present
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
 
-    # Display chat history
     for chat in st.session_state.chat_history:
         with st.chat_message("user"):
             st.write(chat["user"])
         with st.chat_message("assistant"):
             st.write(chat["bot"])
 
-    # Chat input
     user_input = st.chat_input("Ask about plant diseases or treatments...")
 
     if user_input:
-        # Add user message to chat history
         st.session_state.chat_history.append({"user": user_input, "bot": ""})
 
-        # Generate response
         if st.session_state.disease_info:
             context = f"""
             Disease: {st.session_state.predicted_disease}
@@ -359,10 +317,8 @@ def display_chat_page():
         else:
             response = get_gemini_response(f"The user is asking about plant diseases. User question: {user_input}", "English")
 
-        # Add bot response to chat history
         st.session_state.chat_history[-1]["bot"] = response
 
-        # Display the new message
         with st.chat_message("assistant"):
             st.write(response)
 
