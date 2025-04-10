@@ -4,6 +4,7 @@ from PIL import Image
 import os
 import numpy as np
 import google.generativeai as genai
+import gdown
 
 st.set_page_config(page_title="Smart Plant Disease Detection", layout="wide", page_icon="🌿")
 
@@ -79,8 +80,17 @@ def preprocess_image(image):
 
 @st.cache_resource
 def load_model():
-    MODEL_PATH = r'https://drive.google.com/file/d/1rcDGeyH5f5WtSO7Rv6igxHuMAnUZ9K5u/view?usp=sharing'
-    print(f"Checking if file exists: {os.path.exists(MODEL_PATH)}")
+    MODEL_URL = "https://drive.google.com/file/d/1rcGeyh5fW5tS0RVi6jHuMAnU7K9kSu/view?usp=sharing"  # Shareable link
+    MODEL_PATH = "plant_disease_model.h5"
+
+    if not os.path.exists(MODEL_PATH):
+        st.info("Downloading model... This may take a moment.")
+        try:
+            gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+        except Exception as e:
+            st.error(f"Failed to download model using gdown: {str(e)}")
+            return None
+
     try:
         model = tf.keras.models.load_model(MODEL_PATH)
         return model
@@ -280,14 +290,14 @@ def display_disease_detection_page():
                         "medicines": get_gemini_response(medicines_query, language),
                     }
 
-            if st.session_state.disease_info:
-                st.subheader(f"Disease Information ({language})")
-                with st.expander("Description", expanded=True):
-                    st.write(st.session_state.disease_info["description"])
-                with st.expander("Recommended Cures"):
-                    st.write(st.session_state.disease_info["cures"])
-                with st.expander("Medicines"):
-                    st.write(st.session_state.disease_info["medicines"])
+        if st.session_state.disease_info:
+            st.subheader(f"Disease Information ({language})")
+            with st.expander("Description", expanded=True):
+                st.write(st.session_state.disease_info["description"])
+            with st.expander("Recommended Cures"):
+                st.write(st.session_state.disease_info["cures"])
+            with st.expander("Medicines"):
+                st.write(st.session_state.disease_info["medicines"])
 
 def display_chat_page():
     st.header("Chat with AI Assistant")
