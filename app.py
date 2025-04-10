@@ -79,7 +79,7 @@ def preprocess_image(image):
 
 @st.cache_resource
 def load_model():
-    MODEL_PATH = r'.\plant_disease_model.h5'
+    MODEL_PATH = r'https://drive.google.com/file/d/1rcDGeyH5f5WtSO7Rv6igxHuMAnUZ9K5u/view?usp=sharing'
     print(f"Checking if file exists: {os.path.exists(MODEL_PATH)}")
     try:
         model = tf.keras.models.load_model(MODEL_PATH)
